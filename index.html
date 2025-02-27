@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agriculture Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>Agriculture Chatbot</h1>
+
+    <div class="chat-container">
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Enter soil type (e.g., clay, sandy)">
+        <button onclick="sendMessage()">Ask</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            let inputField = document.getElementById("user-input");
+            let userMessage = inputField.value.trim();
+
+            if (userMessage === "") return;
+
+            displayMessage("You: " + userMessage, "user");
+
+            fetch(`http://127.0.0.1:5000/get_crop?soil=${encodeURIComponent(userMessage)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Server error");
+                    return response.json();
+                })
+                .then(data => {
+                    displayMessage("Bot: " + data.crop, "bot");
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    displayMessage("Bot: Could not connect to server.", "bot");
+                });
+
+            inputField.value = "";
+        }
+
+        function displayMessage(message, sender) {
+            let chatBox = document.getElementById("chat-box");
+            let messageElement = document.createElement("p");
+            messageElement.textContent = message;
+            messageElement.className = sender;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>
